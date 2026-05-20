@@ -1,0 +1,85 @@
+run:
+  tag: lama_lightrefine
+
+runtime:
+  device: cuda
+  seed:
+
+paths:
+  # Official/prepared LaMa checkpoint directory should provide config.yaml and models/best.ckpt.
+  lama_config: path/to/big-lama/config.yaml
+  lama_checkpoint: path/to/big-lama/models/best.ckpt
+
+  # Training uses stochastic image-mask pairing.
+  train_images: path/to/train/images
+  train_masks: path/to/train/mask_pool
+
+  # Validation uses fixed image-mask pairs. Optional test data is only reported,
+  # never used for checkpoint selection. If val_masks/test_masks are empty,
+  # masks are expected beside images as <image_stem><mask_suffix>.<ext>.
+  val_images: path/to/val/images
+  val_masks: path/to/val/masks
+  test_images: path/to/test/images
+  test_masks: path/to/test/masks
+
+  # The supplied checkpoint can be used directly for inference.
+  refiner_checkpoint: refiner_ckpt/lama_refiner.pth
+  output_dir: outputs/refiner
+
+lama:
+  strict_load: true
+
+model:
+  refiner:
+    arch: smp.Unet
+    encoder_name: resnet34
+    encoder_depth: 5
+    encoder_weights:
+    in_channels: 7
+    classes: 3
+    activation:
+
+data:
+  pad_out_to_modulo: 32
+  recursive_images: false
+  recursive_masks: true
+  mask_suffix: _mask000
+  binarize_masks: true
+  train_pad_mode: constant
+  eval_pad_mode: constant
+
+training:
+  batch_size: 32
+  epochs: 400
+  lr: 0.0001
+  mask_out_size: 512
+  num_workers: 4
+  eval_num_workers: 2
+  pin_memory: true
+  eval_interval: 10
+  log_interval: 50
+  checkpoint_metric: full_psnr
+
+loss:
+  residual_weight: 1.0
+  edge_weight: 1.0
+  tv_weight: 0.1
+  lpips_weight: 0.3
+  lpips_backbone: alex
+  boundary_band: 4
+
+evaluation:
+  filter_identical: true
+  report_test: false
+
+inference:
+  image_dir: path/to/inference/images
+  mask_dir: path/to/inference/masks
+  mask_suffix: _mask
+  output_pred_dir: outputs/refiner_inference/pred
+  output_inpaint_dir: outputs/refiner_inference/inpainted
+  binarize_masks: true
+  pad_mode: edge
+  skip_missing_masks: true
+  num_workers: 2
+  pin_memory: true

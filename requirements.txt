@@ -1,0 +1,19 @@
+torch>=1.10
+torchvision
+numpy
+opencv-python
+Pillow
+PyYAML
+tqdm
+scikit-image
+segmentation-models-pytorch
+lpips
+omegaconf
+hydra-core
+
+# LaMa compatibility utilities used by the frozen backbone code.
+easydict==1.9.0
+kornia==0.5.0
+albumentations==0.5.2
+webdataset
+packaging
